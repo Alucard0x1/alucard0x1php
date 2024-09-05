@@ -1,3 +1,71 @@
+<?php
+session_start();
+
+// Handle reset
+if (isset($_POST['operation']) && $_POST['operation'] === 'clear') {
+    $_SESSION['display'] = 0;
+    $_SESSION['num1'] = 0;
+    $_SESSION['operation'] = null;
+    $_SESSION['num2'] = null;
+} 
+
+// Handle number input
+if (isset($_POST['num'])) {
+    if (!isset($_SESSION['display']) || $_SESSION['display'] == 0) {
+        $_SESSION['display'] = $_POST['num'];
+    } else {
+        $_SESSION['display'] .= $_POST['num'];
+    }
+}
+
+// Handle decimal point
+if (isset($_POST['operation']) && $_POST['operation'] === 'dot') {
+    if (strpos($_SESSION['display'], '.') === false) {
+        $_SESSION['display'] .= '.';
+    }
+}
+
+// Handle operations (+, -, /, *)
+if (isset($_POST['operation']) && in_array($_POST['operation'], ['add', 'subtract', 'multiply', 'divide'])) {
+    $_SESSION['num1'] = $_SESSION['display'];
+    $_SESSION['operation'] = $_POST['operation'];
+    $_SESSION['display'] = 0;
+}
+
+// Handle calculation on equal button
+if (isset($_POST['operation']) && $_POST['operation'] === 'equal') {
+    if (isset($_SESSION['operation']) && isset($_SESSION['num1'])) {
+        $_SESSION['num2'] = $_SESSION['display'];
+        $num1 = (float)$_SESSION['num1'];
+        $num2 = (float)$_SESSION['num2'];
+
+        switch ($_SESSION['operation']) {
+            case 'add':
+                $_SESSION['display'] = $num1 + $num2;
+                break;
+            case 'subtract':
+                $_SESSION['display'] = $num1 - $num2;
+                break;
+            case 'multiply':
+                $_SESSION['display'] = $num1 * $num2;
+                break;
+            case 'divide':
+                $_SESSION['display'] = ($num2 != 0) ? $num1 / $num2 : 'Error';
+                break;
+        }
+
+        $_SESSION['operation'] = null;
+        $_SESSION['num1'] = null;
+        $_SESSION['num2'] = null;
+    }
+}
+
+// Default display if none is set
+if (!isset($_SESSION['display'])) {
+    $_SESSION['display'] = 0;
+}
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -62,50 +130,12 @@
 </head>
 <body>
 
-<?php
-// Initializing variables to handle the display and result
-$display = "0";
-$result = null;
-
-// Handle form submission and calculations
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $num1 = isset($_POST['num1']) ? (float)$_POST['num1'] : 0;
-    $num2 = isset($_POST['num2']) ? (float)$_POST['num2'] : 0;
-    $operation = isset($_POST['operation']) ? $_POST['operation'] : null;
-    
-    // Only perform calculation if an operation is selected
-    if ($operation) {
-        switch ($operation) {
-            case 'add':
-                $result = $num1 + $num2;
-                break;
-            case 'subtract':
-                $result = $num1 - $num2;
-                break;
-            case 'multiply':
-                $result = $num1 * $num2;
-                break;
-            case 'divide':
-                $result = ($num2 != 0) ? $num1 / $num2 : "Error (Division by 0)";
-                break;
-            default:
-                $result = "Invalid Operation!";
-        }
-        
-        $display = $result;
-    }
-}
-?>
-
 <div class="calculator">
     <div class="display" id="display">
-        <?php echo htmlspecialchars($display); ?>
+        <?php echo htmlspecialchars($_SESSION['display']); ?>
     </div>
     
-    <form action="/" method="POST">
-        <input type="hidden" name="num1" value="<?php echo isset($num1) ? htmlspecialchars($num1) : 0; ?>">
-        <input type="hidden" name="num2" value="<?php echo isset($num2) ? htmlspecialchars($num2) : 0; ?>">
-        
+    <form action="" method="POST">
         <div class="button-row">
             <button type="submit" name="operation" value="clear" class="button">C</button>
             <button type="submit" name="operation" value="back" class="button">&#8592;</button>
