@@ -66,7 +66,7 @@
 
 <div class="calculator">
     <h2>Simple Calculator</h2>
-    <form action="/api/index.php" method="POST">
+    <form action="/" method="POST">
         <input type="number" name="num1" placeholder="Enter First Number" required>
         <input type="number" name="num2" placeholder="Enter Second Number" required>
         <select name="operation" required>
