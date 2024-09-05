@@ -16,20 +16,44 @@
         }
         .calculator {
             background-color: #fff;
-            padding: 20px;
-            border-radius: 10px;
+            padding: 30px;
+            border-radius: 15px;
             box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
-            width: 300px;
+            width: 350px;
         }
-        input, select, button {
-            width: 100%;
+        input {
+            width: calc(100% - 20px); /* Adjust padding for input fields */
             padding: 10px;
-            margin: 5px 0;
+            margin: 10px 0;
             border: 1px solid #ccc;
             border-radius: 5px;
+            font-size: 1.2em;
+        }
+        select {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 1.2em;
+        }
+        button {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            border: none;
+            background-color: #4CAF50;
+            color: white;
+            border-radius: 5px;
+            font-size: 1.2em;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
         }
         h2 {
             text-align: center;
+            margin-bottom: 20px;
         }
         .result {
             font-size: 1.5em;
@@ -46,10 +70,10 @@
         <input type="number" name="num1" placeholder="Enter First Number" required>
         <input type="number" name="num2" placeholder="Enter Second Number" required>
         <select name="operation" required>
-            <option value="add">Add</option>
-            <option value="subtract">Subtract</option>
-            <option value="multiply">Multiply</option>
-            <option value="divide">Divide</option>
+            <option value="add">+</option>
+            <option value="subtract">−</option>
+            <option value="multiply">×</option>
+            <option value="divide">÷</option>
         </select>
         <button type="submit" name="submit">Calculate</button>
     </form>
