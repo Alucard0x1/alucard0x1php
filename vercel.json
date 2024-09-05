@@ -3,6 +3,5 @@
     "api/*.php": {
       "runtime": "vercel-php@0.7.1"
     }
-  },
-  "nodeVersion": "18.19.18"
+  }
 }
