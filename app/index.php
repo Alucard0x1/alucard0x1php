@@ -1,7 +1,6 @@
 <?php
 session_start();
 
-// Initialize session variables if not set
 if (!isset($_SESSION['display'])) {
     $_SESSION['display'] = '0';
 }
@@ -18,21 +17,17 @@ if (!isset($_SESSION['expression'])) {
     $_SESSION['expression'] = '';
 }
 
-// Handle reset (Clear)
 if (isset($_POST['operation']) && $_POST['operation'] === 'clear') {
     $_SESSION['display'] = '0';
     $_SESSION['num1'] = null;
     $_SESSION['operation'] = null;
     $_SESSION['num2'] = null;
     $_SESSION['expression'] = '';
-} 
+}
 
-// Handle backspace
 if (isset($_POST['operation']) && $_POST['operation'] === 'back') {
     if (strlen($_SESSION['expression']) > 0) {
         $_SESSION['expression'] = substr($_SESSION['expression'], 0, -1);
-        
-        // Update display based on the current state
         if (strpos($_SESSION['expression'], ' + ') !== false ||
             strpos($_SESSION['expression'], ' - ') !== false ||
             strpos($_SESSION['expression'], ' × ') !== false ||
@@ -44,11 +39,9 @@ if (isset($_POST['operation']) && $_POST['operation'] === 'back') {
     }
 }
 
-// Handle number input
 if (isset($_POST['num'])) {
     if ($_SESSION['display'] === '0' || $_SESSION['display'] === 'Error') {
         $_SESSION['display'] = $_POST['num'];
-        // Update expression
         if ($_SESSION['operation'] === null) {
             $_SESSION['expression'] = $_POST['num'];
         } else {
@@ -60,7 +53,6 @@ if (isset($_POST['num'])) {
     }
 }
 
-// Handle decimal point
 if (isset($_POST['operation']) && $_POST['operation'] === 'dot') {
     if (strpos($_SESSION['display'], '.') === false) {
         $_SESSION['display'] .= '.';
@@ -68,7 +60,6 @@ if (isset($_POST['operation']) && $_POST['operation'] === 'dot') {
     }
 }
 
-// Handle operations (+, -, /, *)
 if (isset($_POST['operation']) && in_array($_POST['operation'], ['add', 'subtract', 'multiply', 'divide'])) {
     $operatorMap = [
         'add' => ' + ',
@@ -79,7 +70,6 @@ if (isset($_POST['operation']) && in_array($_POST['operation'], ['add', 'subtrac
     $currentOperation = $_POST['operation'];
 
     if ($_SESSION['operation'] !== null && $_SESSION['num1'] !== null) {
-        // Perform the previous operation before setting the new one
         $_SESSION['num2'] = $_SESSION['display'];
         $num1 = (float)$_SESSION['num1'];
         $num2 = (float)$_SESSION['num2'];
@@ -99,7 +89,6 @@ if (isset($_POST['operation']) && in_array($_POST['operation'], ['add', 'subtrac
                 break;
         }
 
-        // Update the expression with the result
         $_SESSION['expression'] = $_SESSION['display'] !== 'Error' ? strval($_SESSION['display']) . $operatorMap[$currentOperation] : 'Error';
         $_SESSION['num1'] = $_SESSION['display'] !== 'Error' ? $_SESSION['display'] : null;
     } else {
@@ -111,7 +100,6 @@ if (isset($_POST['operation']) && in_array($_POST['operation'], ['add', 'subtrac
     $_SESSION['display'] = '0';
 }
 
-// Handle calculation on equal button
 if (isset($_POST['operation']) && $_POST['operation'] === 'equal') {
     if (isset($_SESSION['operation']) && isset($_SESSION['num1'])) {
         $_SESSION['num2'] = $_SESSION['display'];
@@ -133,7 +121,6 @@ if (isset($_POST['operation']) && $_POST['operation'] === 'equal') {
                 break;
         }
 
-        // Update expression with the result
         $_SESSION['expression'] = $_SESSION['display'];
 
         $_SESSION['operation'] = null;
@@ -142,7 +129,6 @@ if (isset($_POST['operation']) && $_POST['operation'] === 'equal') {
     }
 }
 
-// Ensure display is a string
 $_SESSION['display'] = strval($_SESSION['display']);
 ?>
 <!DOCTYPE html>
@@ -154,7 +140,7 @@ $_SESSION['display'] = strval($_SESSION['display']);
     <style>
         body {
             font-family: 'Arial', sans-serif;
-            background-color: #87ceeb; /* Sky blue background */
+            background-color: #87ceeb;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -162,14 +148,14 @@ $_SESSION['display'] = strval($_SESSION['display']);
             margin: 0;
         }
         .calculator {
-            background-color: #2b2f3e; /* Dark blue background */
+            background-color: #2b2f3e;
             padding: 20px;
             border-radius: 20px;
             box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
-            width: 280px; /* Increased width to accommodate longer expressions */
+            width: 280px;
         }
         .display {
-            background-color: #1a2238; /* Darker section for the display */
+            background-color: #1a2238;
             color: white;
             text-align: right;
             padding: 15px;
@@ -185,7 +171,7 @@ $_SESSION['display'] = strval($_SESSION['display']);
         }
         .button {
             flex: 1;
-            background-color: #50738f; /* Teal buttons */
+            background-color: #50738f;
             color: white;
             border: none;
             font-size: 1.2em;
@@ -196,10 +182,10 @@ $_SESSION['display'] = strval($_SESSION['display']);
             transition: background-color 0.2s;
         }
         .button.operator {
-            background-color: #35748e; /* Dark teal for operators */
+            background-color: #35748e;
         }
         .button.equal {
-            background-color: #f1a329; /* Orange color for the equal button */
+            background-color: #f1a329;
         }
         .button:hover {
             background-color: #607d8b;
