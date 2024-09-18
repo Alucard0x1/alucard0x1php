@@ -49,14 +49,14 @@ This project uses Vercel's Serverless Function for PHP. The `vercel.json` file c
 ```json
 {
   "functions": {
-    "api/*.php": {
+    "app/*.php": {
       "runtime": "vercel-php@0.7.1"
     }
   },
   "rewrites": [
     {
       "source": "/",
-      "destination": "/api/index.php"
+      "destination": "/app/index.php"
     }
   ]
 }
@@ -67,7 +67,7 @@ This configuration ensures that requests to the root URL (`/`) are routed to the
 ### Folder Structure
 
 ```
-/api/index.php    # The PHP file for the calculator
+/app/index.php    # The PHP file for the calculator
 /vercel.json      # Vercel configuration file
 ```
 
