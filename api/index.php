@@ -14,6 +14,9 @@ if (!isset($_SESSION['operation'])) {
 if (!isset($_SESSION['num2'])) {
     $_SESSION['num2'] = null;
 }
+if (!isset($_SESSION['expression'])) {
+    $_SESSION['expression'] = '';
+}
 
 // Handle reset (Clear)
 if (isset($_POST['operation']) && $_POST['operation'] === 'clear') {
@@ -21,23 +24,39 @@ if (isset($_POST['operation']) && $_POST['operation'] === 'clear') {
     $_SESSION['num1'] = null;
     $_SESSION['operation'] = null;
     $_SESSION['num2'] = null;
+    $_SESSION['expression'] = '';
 } 
 
 // Handle backspace
 if (isset($_POST['operation']) && $_POST['operation'] === 'back') {
-    if (strlen($_SESSION['display']) > 1) {
-        $_SESSION['display'] = substr($_SESSION['display'], 0, -1);
-    } else {
-        $_SESSION['display'] = '0';
+    if (strlen($_SESSION['expression']) > 0) {
+        $_SESSION['expression'] = substr($_SESSION['expression'], 0, -1);
+        
+        // Update display based on the current state
+        if (strpos($_SESSION['expression'], ' + ') !== false ||
+            strpos($_SESSION['expression'], ' - ') !== false ||
+            strpos($_SESSION['expression'], ' × ') !== false ||
+            strpos($_SESSION['expression'], ' ÷ ') !== false) {
+            $_SESSION['display'] = '0';
+        } else {
+            $_SESSION['display'] = $_SESSION['expression'] !== '' ? $_SESSION['expression'] : '0';
+        }
     }
 }
 
 // Handle number input
 if (isset($_POST['num'])) {
-    if ($_SESSION['display'] === '0') {
+    if ($_SESSION['display'] === '0' || $_SESSION['display'] === 'Error') {
         $_SESSION['display'] = $_POST['num'];
+        // Update expression
+        if ($_SESSION['operation'] === null) {
+            $_SESSION['expression'] = $_POST['num'];
+        } else {
+            $_SESSION['expression'] .= $_POST['num'];
+        }
     } else {
         $_SESSION['display'] .= $_POST['num'];
+        $_SESSION['expression'] .= $_POST['num'];
     }
 }
 
@@ -45,13 +64,22 @@ if (isset($_POST['num'])) {
 if (isset($_POST['operation']) && $_POST['operation'] === 'dot') {
     if (strpos($_SESSION['display'], '.') === false) {
         $_SESSION['display'] .= '.';
+        $_SESSION['expression'] .= '.';
     }
 }
 
 // Handle operations (+, -, /, *)
 if (isset($_POST['operation']) && in_array($_POST['operation'], ['add', 'subtract', 'multiply', 'divide'])) {
-    if ($_SESSION['operation'] && $_SESSION['num1'] !== null) {
-        // If there's already an operation pending, perform it first
+    $operatorMap = [
+        'add' => ' + ',
+        'subtract' => ' - ',
+        'multiply' => ' × ',
+        'divide' => ' ÷ '
+    ];
+    $currentOperation = $_POST['operation'];
+
+    if ($_SESSION['operation'] !== null && $_SESSION['num1'] !== null) {
+        // Perform the previous operation before setting the new one
         $_SESSION['num2'] = $_SESSION['display'];
         $num1 = (float)$_SESSION['num1'];
         $num2 = (float)$_SESSION['num2'];
@@ -70,11 +98,16 @@ if (isset($_POST['operation']) && in_array($_POST['operation'], ['add', 'subtrac
                 $_SESSION['display'] = ($num2 != 0) ? $num1 / $num2 : 'Error';
                 break;
         }
-        $_SESSION['num1'] = $_SESSION['display'];
+
+        // Update the expression with the result
+        $_SESSION['expression'] = $_SESSION['display'] !== 'Error' ? strval($_SESSION['display']) . $operatorMap[$currentOperation] : 'Error';
+        $_SESSION['num1'] = $_SESSION['display'] !== 'Error' ? $_SESSION['display'] : null;
     } else {
         $_SESSION['num1'] = $_SESSION['display'];
+        $_SESSION['expression'] .= $operatorMap[$currentOperation];
     }
-    $_SESSION['operation'] = $_POST['operation'];
+
+    $_SESSION['operation'] = $currentOperation;
     $_SESSION['display'] = '0';
 }
 
@@ -99,6 +132,9 @@ if (isset($_POST['operation']) && $_POST['operation'] === 'equal') {
                 $_SESSION['display'] = ($num2 != 0) ? $num1 / $num2 : 'Error';
                 break;
         }
+
+        // Update expression with the result
+        $_SESSION['expression'] = $_SESSION['display'];
 
         $_SESSION['operation'] = null;
         $_SESSION['num1'] = null;
@@ -130,14 +166,14 @@ $_SESSION['display'] = strval($_SESSION['display']);
             padding: 20px;
             border-radius: 20px;
             box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
-            width: 250px;
+            width: 280px; /* Increased width to accommodate longer expressions */
         }
         .display {
             background-color: #1a2238; /* Darker section for the display */
             color: white;
             text-align: right;
             padding: 15px;
-            font-size: 2em;
+            font-size: 1.5em;
             border-radius: 10px;
             margin-bottom: 20px;
             min-height: 50px;
@@ -152,7 +188,7 @@ $_SESSION['display'] = strval($_SESSION['display']);
             background-color: #50738f; /* Teal buttons */
             color: white;
             border: none;
-            font-size: 1.5em;
+            font-size: 1.2em;
             margin: 5px;
             padding: 15px;
             border-radius: 10px;
@@ -177,15 +213,15 @@ $_SESSION['display'] = strval($_SESSION['display']);
 
 <div class="calculator">
     <div class="display" id="display">
-        <?php echo htmlspecialchars($_SESSION['display']); ?>
+        <?php echo htmlspecialchars($_SESSION['expression'] !== '' ? $_SESSION['expression'] : $_SESSION['display']); ?>
     </div>
     
     <form action="" method="POST">
         <div class="button-row">
             <button type="submit" name="operation" value="clear" class="button">C</button>
             <button type="submit" name="operation" value="back" class="button">&#8592;</button>
-            <button type="submit" name="operation" value="divide" class="button operator">/</button>
-            <button type="submit" name="operation" value="multiply" class="button operator">x</button>
+            <button type="submit" name="operation" value="divide" class="button operator">÷</button>
+            <button type="submit" name="operation" value="multiply" class="button operator">×</button>
         </div>
         <div class="button-row">
             <button type="submit" name="num" value="7" class="button">7</button>
