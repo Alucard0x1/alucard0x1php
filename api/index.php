@@ -1,17 +1,40 @@
 <?php
 session_start();
 
-// Handle reset
+// Initialize session variables if not set
+if (!isset($_SESSION['display'])) {
+    $_SESSION['display'] = '0';
+}
+if (!isset($_SESSION['num1'])) {
+    $_SESSION['num1'] = null;
+}
+if (!isset($_SESSION['operation'])) {
+    $_SESSION['operation'] = null;
+}
+if (!isset($_SESSION['num2'])) {
+    $_SESSION['num2'] = null;
+}
+
+// Handle reset (Clear)
 if (isset($_POST['operation']) && $_POST['operation'] === 'clear') {
-    $_SESSION['display'] = 0;
-    $_SESSION['num1'] = 0;
+    $_SESSION['display'] = '0';
+    $_SESSION['num1'] = null;
     $_SESSION['operation'] = null;
     $_SESSION['num2'] = null;
 } 
 
+// Handle backspace
+if (isset($_POST['operation']) && $_POST['operation'] === 'back') {
+    if (strlen($_SESSION['display']) > 1) {
+        $_SESSION['display'] = substr($_SESSION['display'], 0, -1);
+    } else {
+        $_SESSION['display'] = '0';
+    }
+}
+
 // Handle number input
 if (isset($_POST['num'])) {
-    if (!isset($_SESSION['display']) || $_SESSION['display'] == 0) {
+    if ($_SESSION['display'] === '0') {
         $_SESSION['display'] = $_POST['num'];
     } else {
         $_SESSION['display'] .= $_POST['num'];
@@ -27,9 +50,32 @@ if (isset($_POST['operation']) && $_POST['operation'] === 'dot') {
 
 // Handle operations (+, -, /, *)
 if (isset($_POST['operation']) && in_array($_POST['operation'], ['add', 'subtract', 'multiply', 'divide'])) {
-    $_SESSION['num1'] = $_SESSION['display'];
+    if ($_SESSION['operation'] && $_SESSION['num1'] !== null) {
+        // If there's already an operation pending, perform it first
+        $_SESSION['num2'] = $_SESSION['display'];
+        $num1 = (float)$_SESSION['num1'];
+        $num2 = (float)$_SESSION['num2'];
+
+        switch ($_SESSION['operation']) {
+            case 'add':
+                $_SESSION['display'] = $num1 + $num2;
+                break;
+            case 'subtract':
+                $_SESSION['display'] = $num1 - $num2;
+                break;
+            case 'multiply':
+                $_SESSION['display'] = $num1 * $num2;
+                break;
+            case 'divide':
+                $_SESSION['display'] = ($num2 != 0) ? $num1 / $num2 : 'Error';
+                break;
+        }
+        $_SESSION['num1'] = $_SESSION['display'];
+    } else {
+        $_SESSION['num1'] = $_SESSION['display'];
+    }
     $_SESSION['operation'] = $_POST['operation'];
-    $_SESSION['display'] = 0;
+    $_SESSION['display'] = '0';
 }
 
 // Handle calculation on equal button
@@ -60,12 +106,9 @@ if (isset($_POST['operation']) && $_POST['operation'] === 'equal') {
     }
 }
 
-// Default display if none is set
-if (!isset($_SESSION['display'])) {
-    $_SESSION['display'] = 0;
-}
+// Ensure display is a string
+$_SESSION['display'] = strval($_SESSION['display']);
 ?>
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -97,6 +140,8 @@ if (!isset($_SESSION['display'])) {
             font-size: 2em;
             border-radius: 10px;
             margin-bottom: 20px;
+            min-height: 50px;
+            word-wrap: break-word;
         }
         .button-row {
             display: flex;
