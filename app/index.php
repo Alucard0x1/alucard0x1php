@@ -1,6 +1,5 @@
 <?php
 session_start();
-
 if (!isset($_SESSION['display'])) {
     $_SESSION['display'] = '0';
 }
